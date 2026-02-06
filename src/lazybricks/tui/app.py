@@ -190,8 +190,14 @@ class LazyBricksApp(App):
         self.push_screen(HelpOverlay())
 
     def action_back(self) -> None:
-        """Go back / close current modal."""
-        if len(self.screen_stack) > 1:
+        """Go back / close current modal.
+
+        Only pops modal screens (like help overlay), never main screens.
+        """
+        from textual.screen import ModalScreen
+
+        # Only pop if current screen is a modal
+        if isinstance(self.screen, ModalScreen):
             self.pop_screen()
 
     def action_quit(self) -> None:

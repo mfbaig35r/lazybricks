@@ -305,11 +305,16 @@ class JobsScreen(BaseScreen):
             self._update_pane_styles()
 
     def action_back_up(self) -> None:
-        """Back up in hierarchy."""
+        """Back up in hierarchy.
+
+        Always consumes the escape key to prevent app-level pop.
+        """
         if self._current_pane > 0:
             self._current_pane -= 1
             self._update_pane_styles()
             self._focus_current_pane()
+            self._update_footer()
+        # Don't propagate to app level even when at pane 0
 
     def action_run_now(self) -> None:
         """Trigger job to run immediately."""
