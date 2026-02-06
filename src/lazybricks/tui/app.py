@@ -20,7 +20,7 @@ from lazybricks.api.health import HealthBuilder
 from lazybricks.api.jobs import JobOps
 from lazybricks.api.logs import LogOps
 from lazybricks.api.warehouses import WarehouseOps
-from lazybricks.tui.theme_config import get_css
+from lazybricks.tui.theme_config import get_css, get_theme
 from lazybricks.tui.widgets.header import Header
 from lazybricks.tui.widgets.status_bar import StatusBar, GLOBAL_BINDINGS
 
@@ -46,9 +46,12 @@ class LazyBricksApp(App):
     SCREENS = {}  # Will be populated dynamically
 
     def __init__(self, client: DatabricksClient) -> None:
-        # Load theme CSS before super().__init__
+        # Load theme config
+        self._theme_config = get_theme()
         LazyBricksApp.CSS = get_css()
         super().__init__()
+        # Set theme after init
+        self.theme = self._theme_config.theme_name
         self._client = client
         self._guard = ArmedGuard(ttl_seconds=30)
 

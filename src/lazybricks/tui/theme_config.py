@@ -25,33 +25,38 @@ except ImportError:
 class ThemeColors:
     """Theme color configuration with terminal-aware defaults."""
 
-    # Core UI colors - default to ANSI/terminal colors
-    background: str = "$surface"           # Terminal background
-    surface: str = "$surface-darken-1"     # Slightly darker surface
-    panel: str = "$surface-darken-2"       # Panel backgrounds
-    border: str = "$primary-darken-2"      # Borders
+    # Textual built-in theme name (uses terminal ANSI colors by default)
+    # Options: textual-ansi, textual-dark, textual-light, nord, gruvbox,
+    #          catppuccin-mocha, dracula, tokyo-night, monokai, solarized-dark
+    theme_name: str = "textual-ansi"
+
+    # Core UI colors - use Textual design tokens (inherit from theme)
+    background: str = "$background"        # Theme background
+    surface: str = "$surface"              # Surface color
+    panel: str = "$panel"                  # Panel backgrounds
+    border: str = "$primary-background"    # Borders
 
     # Text colors
     text: str = "$text"                    # Primary text
     text_muted: str = "$text-muted"        # Dimmed text
 
-    # Accent color - this is the main brand color
-    accent: str = "#e94560"                # Red/pink accent (customizable)
+    # Accent color - uses primary by default
+    accent: str = "$primary"               # Theme's primary color
 
     # Status colors - use ANSI for terminal consistency
-    success: str = "ansi_green"
-    error: str = "ansi_red"
-    warning: str = "ansi_yellow"
-    info: str = "ansi_cyan"
+    success: str = "$success"
+    error: str = "$error"
+    warning: str = "$warning"
+    info: str = "$primary"
 
     # State-specific (can override)
-    running: str = "ansi_green"
+    running: str = "$success"
     stopped: str = "$text-muted"
-    pending: str = "ansi_yellow"
+    pending: str = "$warning"
 
     # Armed mode
-    armed: str = "ansi_red"
-    disarmed: str = "ansi_green"
+    armed: str = "$error"
+    disarmed: str = "$success"
 
     @classmethod
     def load(cls, config_path: Optional[Path] = None) -> "ThemeColors":
