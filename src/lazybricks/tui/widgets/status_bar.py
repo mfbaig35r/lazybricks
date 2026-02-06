@@ -60,12 +60,16 @@ class StatusBar(Widget):
 
     def _render_bindings(self) -> None:
         """Render the keybinding display."""
-        container = self.query_one("#status-bindings", Horizontal)
-        container.remove_children()
+        try:
+            container = self.query_one("#status-bindings", Horizontal)
+            container.remove_children()
 
-        for key, desc in self.bindings:
-            container.mount(Static(f"[bold #e94560]{key}[/]", classes="key"))
-            container.mount(Static(f" {desc}  ", classes="desc"))
+            for key, desc in self.bindings:
+                container.mount(Static(f"[bold #e94560]{key}[/]", classes="key"))
+                container.mount(Static(f" {desc}  ", classes="desc"))
+        except Exception:
+            # Widget not yet composed
+            pass
 
     def set_bindings(self, bindings: list[tuple[str, str]]) -> None:
         """Update the displayed bindings."""
