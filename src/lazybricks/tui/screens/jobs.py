@@ -92,9 +92,9 @@ class JobsScreen(BaseScreen):
         """Load jobs in background."""
         try:
             jobs = self.lazybricks_app.job_ops.list_jobs(limit=100)
-            self.call_from_thread(self._update_jobs_table, jobs)
+            self.app.call_from_thread(self._update_jobs_table, jobs)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to load jobs: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to load jobs: {e}")
 
     def _update_jobs_table(self, jobs: list[JobSummary]) -> None:
         """Update the jobs table."""
@@ -135,9 +135,9 @@ class JobsScreen(BaseScreen):
         """Load runs for a job."""
         try:
             runs = self.lazybricks_app.job_ops.list_runs(job_id=job_id, limit=25)
-            self.call_from_thread(self._update_runs_table, runs)
+            self.app.call_from_thread(self._update_runs_table, runs)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to load runs: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to load runs: {e}")
 
     def _update_runs_table(self, runs: list[RunSummary]) -> None:
         """Update the runs table."""
@@ -201,6 +201,18 @@ class JobsScreen(BaseScreen):
             lines.append("")
             lines.append("[red]Error:[/]")
             lines.append(f"  {run.error_snippet[:200]}")
+
+        lines.extend([
+            "",
+            "─" * 40,
+            "",
+            "[dim]Actions:[/]",
+            "  [bold #e94560]n[/] run now  [bold #e94560]c[/] cancel  [bold #e94560]R[/] rerun  [bold #e94560]l[/] logs",
+            "",
+            "[dim]Navigation:[/]",
+            "  [bold #e94560]Tab[/] next pane  [bold #e94560]Enter[/] drill down  [bold #e94560]Esc[/] back up",
+            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles",
+        ])
 
         detail.update("\n".join(lines))
 
@@ -295,10 +307,10 @@ class JobsScreen(BaseScreen):
         try:
             result = self.lazybricks_app.job_ops.run_now(job_id)
             if result.get("status") == "submitted":
-                self.call_from_thread(self.notify_success, f"Job triggered - run {result.get('run_id')}")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, f"Job triggered - run {result.get('run_id')}")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to trigger"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to trigger"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 
@@ -323,10 +335,10 @@ class JobsScreen(BaseScreen):
         try:
             result = self.lazybricks_app.job_ops.cancel_run(run_id)
             if result.get("status") == "cancelled":
-                self.call_from_thread(self.notify_success, "Run cancellation requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Run cancellation requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to cancel"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to cancel"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 
@@ -351,10 +363,10 @@ class JobsScreen(BaseScreen):
         try:
             result = self.lazybricks_app.job_ops.rerun(run_id)
             if result.get("status") == "rerun_submitted":
-                self.call_from_thread(self.notify_success, "Rerun submitted")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Rerun submitted")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to rerun"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to rerun"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 

@@ -58,9 +58,9 @@ class HomeScreen(BaseScreen):
         """Load health snapshot in background thread."""
         try:
             snapshot = self.lazybricks_app.health_builder.build()
-            self.call_from_thread(self._update_display, snapshot)
+            self.app.call_from_thread(self._update_display, snapshot)
         except Exception as e:
-            self.call_from_thread(self._show_error, str(e))
+            self.app.call_from_thread(self._show_error, str(e))
 
     def _update_display(self, snapshot: HealthSnapshot) -> None:
         """Update UI with health data (called on main thread)."""
@@ -90,6 +90,11 @@ class HomeScreen(BaseScreen):
             "  " + "─" * 50,
             "",
             f"  [dim]Last fail:[/]  {snapshot.last_failure_display}",
+            "",
+            "  " + "─" * 50,
+            "",
+            "  [dim]Navigation:[/]  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles  [bold #e94560]?[/] help  [bold #e94560]q[/] quit",
+            "  [dim]Actions:[/]     [bold #e94560]r[/] refresh  [bold #e94560]A[/] arm (for destructive actions)",
             "",
         ]
 

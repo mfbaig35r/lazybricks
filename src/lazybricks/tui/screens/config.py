@@ -107,6 +107,17 @@ class ConfigScreen(BaseScreen):
         if profile.account_id:
             lines.append(f"[dim]Account:[/]   {profile.account_id}")
 
+        lines.extend([
+            "",
+            "─" * 40,
+            "",
+            "[dim]Actions:[/]",
+            "  [bold #e94560]Enter[/] switch profile  [bold #e94560]t[/] test connection",
+            "",
+            "[dim]Navigation:[/]",
+            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses",
+        ])
+
         detail.update("\n".join(lines))
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -137,9 +148,9 @@ class ConfigScreen(BaseScreen):
             self.lazybricks_app.client.config = new_config
             self.lazybricks_app.client.refresh()
 
-            self.call_from_thread(self._on_profile_switched, profile_name)
+            self.app.call_from_thread(self._on_profile_switched, profile_name)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to switch: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to switch: {e}")
 
     def _on_profile_switched(self, profile_name: str) -> None:
         """Handle successful profile switch."""
@@ -169,8 +180,8 @@ class ConfigScreen(BaseScreen):
             result = self.lazybricks_app.client.test_connection()
             if result.get("status") == "ok":
                 user = result.get("user", "unknown")
-                self.call_from_thread(self.notify_success, f"Connection OK - user: {user}")
+                self.app.call_from_thread(self.notify_success, f"Connection OK - user: {user}")
             else:
-                self.call_from_thread(self.notify_error, f"Connection failed: {result.get('error')}")
+                self.app.call_from_thread(self.notify_error, f"Connection failed: {result.get('error')}")
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Connection test failed: {e}")
+            self.app.call_from_thread(self.notify_error, f"Connection test failed: {e}")

@@ -67,9 +67,9 @@ class WarehousesScreen(BaseScreen):
         """Load warehouses in background."""
         try:
             warehouses = self.lazybricks_app.warehouse_ops.list_all()
-            self.call_from_thread(self._update_table, warehouses)
+            self.app.call_from_thread(self._update_table, warehouses)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to load warehouses: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to load warehouses: {e}")
 
     def _update_table(self, warehouses: list[WarehouseSummary]) -> None:
         """Update the warehouses table."""
@@ -121,6 +121,20 @@ class WarehousesScreen(BaseScreen):
             f"[dim]Creator:[/]   {warehouse.creator}",
         ]
 
+        lines.extend([
+            "",
+            "─" * 40,
+            "",
+            "[dim]Actions:[/]",
+            "  [bold #e94560]s[/] start  [bold #e94560]S[/] stop  [bold #e94560]r[/] refresh",
+            "  [bold #e94560]Enter[/] open in browser",
+            "",
+            "[dim]Navigation:[/]",
+            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]p[/] profiles",
+            "",
+            "[yellow]Press A to arm before destructive actions[/]",
+        ])
+
         detail.update("\n".join(lines))
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -162,10 +176,10 @@ class WarehousesScreen(BaseScreen):
         try:
             result = self.lazybricks_app.warehouse_ops.start(warehouse_id)
             if result.get("status") == "started":
-                self.call_from_thread(self.notify_success, "Warehouse start requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Warehouse start requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to start"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to start"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 
@@ -190,9 +204,9 @@ class WarehousesScreen(BaseScreen):
         try:
             result = self.lazybricks_app.warehouse_ops.stop(warehouse_id)
             if result.get("status") == "stopped":
-                self.call_from_thread(self.notify_success, "Warehouse stop requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Warehouse stop requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to stop"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to stop"))
         finally:
             self.lazybricks_app.client.config.read_only = True

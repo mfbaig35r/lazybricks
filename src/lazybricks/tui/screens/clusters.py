@@ -73,9 +73,9 @@ class ClustersScreen(BaseScreen):
         """Load clusters in background."""
         try:
             clusters = self.lazybricks_app.cluster_ops.list_all()
-            self.call_from_thread(self._update_table, clusters)
+            self.app.call_from_thread(self._update_table, clusters)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to load clusters: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to load clusters: {e}")
 
     def _update_table(self, clusters: list[ClusterSummary]) -> None:
         """Update the clusters table."""
@@ -142,6 +142,20 @@ class ClustersScreen(BaseScreen):
             lines.append("")
             lines.append(f"[dim]Message:[/] {cluster.state_message}")
 
+        lines.extend([
+            "",
+            "─" * 40,
+            "",
+            "[dim]Actions:[/]",
+            "  [bold #e94560]s[/] start  [bold #e94560]t[/] terminate  [bold #e94560]R[/] restart",
+            "  [bold #e94560]l[/] logs  [bold #e94560]r[/] refresh  [bold #e94560]Enter[/] open in browser",
+            "",
+            "[dim]Navigation:[/]",
+            "  [bold #e94560]h[/] home  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles",
+            "",
+            "[yellow]Press A to arm before destructive actions[/]",
+        ])
+
         detail.update("\n".join(lines))
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -191,10 +205,10 @@ class ClustersScreen(BaseScreen):
         try:
             result = self.lazybricks_app.cluster_ops.start(cluster_id)
             if result.get("status") == "started":
-                self.call_from_thread(self.notify_success, "Cluster start requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Cluster start requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to start"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to start"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 
@@ -219,10 +233,10 @@ class ClustersScreen(BaseScreen):
         try:
             result = self.lazybricks_app.cluster_ops.terminate(cluster_id)
             if result.get("status") == "terminated":
-                self.call_from_thread(self.notify_success, "Cluster termination requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Cluster termination requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to terminate"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to terminate"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 
@@ -247,10 +261,10 @@ class ClustersScreen(BaseScreen):
         try:
             result = self.lazybricks_app.cluster_ops.restart(cluster_id)
             if result.get("status") == "restarting":
-                self.call_from_thread(self.notify_success, "Cluster restart requested")
-                self.call_from_thread(self._refresh_data)
+                self.app.call_from_thread(self.notify_success, "Cluster restart requested")
+                self.app.call_from_thread(self._refresh_data)
             else:
-                self.call_from_thread(self.notify_error, result.get("error", "Failed to restart"))
+                self.app.call_from_thread(self.notify_error, result.get("error", "Failed to restart"))
         finally:
             self.lazybricks_app.client.config.read_only = True
 

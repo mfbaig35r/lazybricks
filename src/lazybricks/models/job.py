@@ -72,7 +72,7 @@ class RunResult(str, Enum):
 
     @property
     def is_failure(self) -> bool:
-        return self in (RunResult.FAILED, RunResult.TIMEDOUT, RunResult.INTERNAL_ERROR)
+        return self in (RunResult.FAILED, RunResult.TIMEDOUT, RunResult.UPSTREAM_FAILED)
 
     @property
     def display_style(self) -> str:

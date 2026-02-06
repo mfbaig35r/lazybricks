@@ -36,6 +36,7 @@ class LazyBricksApp(App):
         Binding("j", "go_jobs", "Jobs", show=False),
         Binding("w", "go_warehouses", "Warehouses", show=False),
         Binding("l", "go_logs", "Logs", show=False),
+        Binding("p", "go_config", "Config/Profiles", show=False),
         Binding("A", "toggle_armed", "Arm/Disarm", show=False),
         Binding("question_mark", "show_help", "Help", show=False),
         Binding("q", "quit", "Quit", show=False),
@@ -170,6 +171,10 @@ class LazyBricksApp(App):
             "Select a run from Jobs screen first, then press 'l' for logs",
             severity="warning",
         )
+
+    def action_go_config(self) -> None:
+        """Navigate to config/profiles screen."""
+        self.switch_screen("config")
 
     def action_toggle_armed(self) -> None:
         """Toggle armed mode."""

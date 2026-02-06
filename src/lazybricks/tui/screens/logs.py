@@ -77,9 +77,9 @@ class LogsScreen(BaseScreen):
         """Load logs in background."""
         try:
             blocks = self.lazybricks_app.log_ops.get_run_logs(self._run_id)
-            self.call_from_thread(self._display_logs, blocks)
+            self.app.call_from_thread(self._display_logs, blocks)
         except Exception as e:
-            self.call_from_thread(self.notify_error, f"Failed to load logs: {e}")
+            self.app.call_from_thread(self.notify_error, f"Failed to load logs: {e}")
 
     def _display_logs(self, blocks: list[LogBlock]) -> None:
         """Display the loaded logs."""
