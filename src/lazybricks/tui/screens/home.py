@@ -16,13 +16,11 @@ from textual import work
 
 from lazybricks.models.health import HealthSnapshot
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import HOME_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class HomeScreen(BaseScreen):
     """Home screen with health dashboard."""
-
-    SCREEN_BINDINGS = HOME_BINDINGS
 
     BINDINGS = [
         ("r", "refresh", "Refresh"),
@@ -32,6 +30,12 @@ class HomeScreen(BaseScreen):
         super().__init__()
         self._snapshot: HealthSnapshot | None = None
         self._loading = True
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Home screen context actions."""
+        return [
+            HintItem("r", "Refresh"),
+        ]
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -90,11 +94,6 @@ class HomeScreen(BaseScreen):
             "  " + "─" * 50,
             "",
             f"  [dim]Last fail:[/]  {snapshot.last_failure_display}",
-            "",
-            "  " + "─" * 50,
-            "",
-            "  [dim]Navigation:[/]  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles  [bold #e94560]?[/] help  [bold #e94560]q[/] quit",
-            "  [dim]Actions:[/]     [bold #e94560]r[/] refresh  [bold #e94560]A[/] arm (for destructive actions)",
             "",
         ]
 

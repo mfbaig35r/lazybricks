@@ -18,13 +18,11 @@ from textual.binding import Binding
 
 from lazybricks.api.logs import LogBlock, LogLine, LogSeverity
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import LOGS_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class LogsScreen(BaseScreen):
     """Full-screen log viewer."""
-
-    SCREEN_BINDINGS = LOGS_BINDINGS
 
     BINDINGS = [
         Binding("slash", "start_search", "Search", show=False),
@@ -50,6 +48,21 @@ class LogsScreen(BaseScreen):
         self._filter_level = 0  # 0=ALL, 1=ERROR, 2=WARN+, 3=INFO+
         self._searching = False
         self._fallback_url = ""
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Logs screen context actions."""
+        actions = [
+            HintItem("/", "Search"),
+            HintItem("f", "Filter"),
+            HintItem("g", "Top"),
+            HintItem("G", "Bottom"),
+            HintItem("o", "Browser"),
+            HintItem("Esc", "Close"),
+        ]
+        if self._search_pattern:
+            actions.insert(1, HintItem("n", "Next"))
+            actions.insert(2, HintItem("N", "Prev"))
+        return actions
 
     def compose(self) -> ComposeResult:
         yield Container(

@@ -4,7 +4,7 @@ All screens inherit from this to get:
 - Access to app-level state (client, guard, ops)
 - Common refresh patterns
 - Error handling
-- Status bar updates
+- Footer bar context action updates
 """
 
 from __future__ import annotations
@@ -12,6 +12,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.screen import Screen
+
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 if TYPE_CHECKING:
     from lazybricks.tui.app import LazyBricksApp
@@ -23,11 +25,8 @@ class BaseScreen(Screen):
     Provides:
     - Type-safe access to app instance
     - Common refresh pattern with error handling
-    - Status bar binding management
+    - Footer bar context action management
     """
-
-    # Subclasses should override this with their keybindings
-    SCREEN_BINDINGS: list[tuple[str, str]] = []
 
     @property
     def lazybricks_app(self) -> "LazyBricksApp":
@@ -47,17 +46,25 @@ class BaseScreen(Screen):
         return self.lazybricks_app.guard
 
     def on_mount(self) -> None:
-        """Called when screen is mounted. Updates status bar."""
-        self._update_status_bar()
+        """Called when screen is mounted. Updates footer."""
+        self._update_footer()
 
     def on_screen_resume(self) -> None:
-        """Called when screen is resumed. Updates status bar."""
-        self._update_status_bar()
+        """Called when screen is resumed. Updates footer."""
+        self._update_footer()
 
-    def _update_status_bar(self) -> None:
-        """Update status bar with this screen's bindings."""
-        if self.SCREEN_BINDINGS:
-            self.lazybricks_app.update_status_bar(self.SCREEN_BINDINGS)
+    def get_context_actions(self) -> list[HintItem]:
+        """Return context actions for footer bar.
+
+        Override in subclasses to provide screen-specific actions.
+        Actions with destructive=True only show when armed.
+        """
+        return []
+
+    def _update_footer(self) -> None:
+        """Update footer bar with this screen's context actions."""
+        actions = self.get_context_actions()
+        self.lazybricks_app.update_footer(actions)
 
     def notify_error(self, message: str) -> None:
         """Show an error notification."""

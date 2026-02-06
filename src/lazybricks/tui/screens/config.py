@@ -12,13 +12,11 @@ from textual import work
 
 from lazybricks.models.config import DatabricksProfile
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import CONFIG_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class ConfigScreen(BaseScreen):
     """Configuration and profile management screen."""
-
-    SCREEN_BINDINGS = CONFIG_BINDINGS
 
     BINDINGS = [
         ("enter", "switch_profile", "Switch"),
@@ -30,6 +28,13 @@ class ConfigScreen(BaseScreen):
         self._profiles: list[DatabricksProfile] = []
         self._selected_profile: DatabricksProfile | None = None
         self._current_profile: str = ""
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Config screen context actions."""
+        return [
+            HintItem("Enter", "Switch"),
+            HintItem("t", "Test"),
+        ]
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -106,17 +111,6 @@ class ConfigScreen(BaseScreen):
 
         if profile.account_id:
             lines.append(f"[dim]Account:[/]   {profile.account_id}")
-
-        lines.extend([
-            "",
-            "─" * 40,
-            "",
-            "[dim]Actions:[/]",
-            "  [bold #e94560]Enter[/] switch profile  [bold #e94560]t[/] test connection",
-            "",
-            "[dim]Navigation:[/]",
-            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses",
-        ])
 
         detail.update("\n".join(lines))
 

@@ -1,12 +1,12 @@
 """Help overlay — modal showing all keybindings.
 
-Shows context-aware help with all available keybindings.
+Shows complete keyboard reference organized by section.
 """
 
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical
+from textual.containers import Container, Vertical, ScrollableContainer
 from textual.screen import ModalScreen
 from textual.widgets import Static
 from textual.binding import Binding
@@ -28,87 +28,111 @@ class HelpOverlay(ModalScreen):
 
     #help-container {
         width: 70;
-        max-height: 80%;
-        background: #1a1a2e;
-        border: thick #e94560;
+        max-height: 85%;
+        background: $surface;
+        border: thick $primary;
         padding: 1 2;
     }
 
     #help-title {
         text-align: center;
         text-style: bold;
-        color: #e94560;
+        color: $primary;
         margin-bottom: 1;
     }
 
-    .help-section {
-        margin-top: 1;
+    #help-scroll {
+        height: auto;
+        max-height: 100%;
     }
 
-    .help-section-title {
-        color: #e94560;
+    .section-title {
+        color: $primary;
         text-style: bold;
+        margin-top: 1;
     }
 
     .help-row {
         margin-left: 2;
     }
+
+    .key {
+        color: $warning;
+    }
+
+    #help-footer {
+        margin-top: 1;
+        text-align: center;
+        color: $text-muted;
+    }
     """
 
     def compose(self) -> ComposeResult:
         yield Container(
-            Static("[bold #e94560]LazyBricks Help[/]", id="help-title"),
-            Vertical(
-                # Navigation
-                Static("[bold #e94560]Navigation[/]", classes="help-section-title"),
-                Static("  [yellow]h[/]       Home screen", classes="help-row"),
-                Static("  [yellow]c[/]       Clusters screen", classes="help-row"),
-                Static("  [yellow]j[/]       Jobs screen", classes="help-row"),
-                Static("  [yellow]w[/]       Warehouses screen", classes="help-row"),
-                Static("  [yellow]Esc[/]     Back / Close", classes="help-row"),
-                Static("  [yellow]q[/]       Quit", classes="help-row"),
+            Static("LazyBricks Keyboard Reference", id="help-title"),
+            ScrollableContainer(
+                # Global Navigation
+                Static("Global Navigation", classes="section-title"),
+                Static("  [h]       Home", classes="help-row"),
+                Static("  [c]       Clusters", classes="help-row"),
+                Static("  [j]       Jobs", classes="help-row"),
+                Static("  [w]       Warehouses", classes="help-row"),
+                Static("  [p]       Profiles", classes="help-row"),
+                Static("  [?]       Help", classes="help-row"),
+                Static("  [q]       Quit", classes="help-row"),
 
                 # Armed Mode
-                Static("[bold #e94560]Armed Mode[/]", classes="help-section-title"),
-                Static("  [yellow]A[/]       Toggle armed mode (30s)", classes="help-row"),
-                Static("  [dim]Destructive actions require armed mode[/]", classes="help-row"),
+                Static("Armed Mode", classes="section-title"),
+                Static("  [A]       Arm (30s countdown)", classes="help-row"),
+                Static("  [Esc]     Disarm (when armed)", classes="help-row"),
+                Static("  Destructive actions only work when armed.", classes="help-row"),
+                Static("  Footer shows ARMED + countdown when active.", classes="help-row"),
 
                 # Clusters
-                Static("[bold #e94560]Clusters (when armed)[/]", classes="help-section-title"),
-                Static("  [yellow]s[/]       Start cluster", classes="help-row"),
-                Static("  [yellow]t[/]       Terminate cluster", classes="help-row"),
-                Static("  [yellow]R[/]       Restart cluster", classes="help-row"),
+                Static("Clusters", classes="section-title"),
+                Static("  [r]       Refresh list", classes="help-row"),
+                Static("  [Enter]   Open in browser", classes="help-row"),
+                Static("  [s]       Start (when armed, if stopped)", classes="help-row"),
+                Static("  [t]       Terminate (when armed, if running)", classes="help-row"),
+                Static("  [R]       Restart (when armed, if running)", classes="help-row"),
 
                 # Jobs
-                Static("[bold #e94560]Jobs[/]", classes="help-section-title"),
-                Static("  [yellow]Tab[/]     Switch pane", classes="help-row"),
-                Static("  [yellow]Enter[/]   Select / Drill down", classes="help-row"),
-                Static("  [yellow]n[/]       Run now (armed)", classes="help-row"),
-                Static("  [yellow]c[/]       Cancel run (armed)", classes="help-row"),
-                Static("  [yellow]R[/]       Rerun (armed)", classes="help-row"),
-                Static("  [yellow]l[/]       View logs", classes="help-row"),
+                Static("Jobs", classes="section-title"),
+                Static("  [Tab]     Switch pane (Jobs/Runs/Detail)", classes="help-row"),
+                Static("  [Enter]   Drill down into selection", classes="help-row"),
+                Static("  [Esc]     Back up one pane", classes="help-row"),
+                Static("  [r]       Refresh", classes="help-row"),
+                Static("  [l]       View logs for selected run", classes="help-row"),
+                Static("  [n]       Run job now (when armed)", classes="help-row"),
+                Static("  [c]       Cancel run (when armed, if active)", classes="help-row"),
+                Static("  [R]       Rerun (when armed, if completed)", classes="help-row"),
 
                 # Logs
-                Static("[bold #e94560]Logs[/]", classes="help-section-title"),
-                Static("  [yellow]/[/]       Search", classes="help-row"),
-                Static("  [yellow]n/N[/]     Next/Prev match", classes="help-row"),
-                Static("  [yellow]f[/]       Cycle filter (ALL/ERROR/WARN+/INFO+)", classes="help-row"),
-                Static("  [yellow]G/g[/]     Go to bottom/top", classes="help-row"),
-                Static("  [yellow]o[/]       Open in browser", classes="help-row"),
+                Static("Logs", classes="section-title"),
+                Static("  [/]       Search", classes="help-row"),
+                Static("  [n]       Next match", classes="help-row"),
+                Static("  [N]       Previous match", classes="help-row"),
+                Static("  [f]       Cycle filter (ALL/ERROR/WARN+/INFO+)", classes="help-row"),
+                Static("  [g]       Go to top", classes="help-row"),
+                Static("  [G]       Go to bottom", classes="help-row"),
+                Static("  [o]       Open in browser", classes="help-row"),
+                Static("  [Esc]     Close log viewer", classes="help-row"),
 
                 # Warehouses
-                Static("[bold #e94560]Warehouses (when armed)[/]", classes="help-section-title"),
-                Static("  [yellow]s[/]       Start warehouse", classes="help-row"),
-                Static("  [yellow]S[/]       Stop warehouse", classes="help-row"),
+                Static("Warehouses", classes="section-title"),
+                Static("  [r]       Refresh list", classes="help-row"),
+                Static("  [Enter]   Open in browser", classes="help-row"),
+                Static("  [s]       Start (when armed, if stopped)", classes="help-row"),
+                Static("  [S]       Stop (when armed, if running)", classes="help-row"),
 
-                # Common
-                Static("[bold #e94560]Common[/]", classes="help-section-title"),
-                Static("  [yellow]r[/]       Refresh current view", classes="help-row"),
-                Static("  [yellow]?[/]       Show this help", classes="help-row"),
+                # Profiles
+                Static("Profiles", classes="section-title"),
+                Static("  [Enter]   Switch to selected profile", classes="help-row"),
+                Static("  [t]       Test connection", classes="help-row"),
 
-                classes="help-section",
+                id="help-scroll",
             ),
-            Static("\n[dim]Press Esc, ?, or q to close[/]"),
+            Static("Press Esc to close", id="help-footer"),
             id="help-container",
         )
 

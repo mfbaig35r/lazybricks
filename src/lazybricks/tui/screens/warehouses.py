@@ -12,13 +12,11 @@ from textual import work
 
 from lazybricks.models.warehouse import WarehouseSummary, WarehouseState
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import WAREHOUSES_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class WarehousesScreen(BaseScreen):
     """SQL Warehouses management screen."""
-
-    SCREEN_BINDINGS = WAREHOUSES_BINDINGS
 
     BINDINGS = [
         ("r", "refresh", "Refresh"),
@@ -31,6 +29,21 @@ class WarehousesScreen(BaseScreen):
         super().__init__()
         self._warehouses: list[WarehouseSummary] = []
         self._selected_warehouse: WarehouseSummary | None = None
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Warehouse screen context actions."""
+        actions = [
+            HintItem("r", "Refresh"),
+            HintItem("Enter", "Open"),
+        ]
+
+        if self._selected_warehouse:
+            if self._selected_warehouse.state == WarehouseState.STOPPED:
+                actions.append(HintItem("s", "Start", destructive=True))
+            elif self._selected_warehouse.state == WarehouseState.RUNNING:
+                actions.append(HintItem("S", "Stop", destructive=True))
+
+        return actions
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -121,21 +134,10 @@ class WarehousesScreen(BaseScreen):
             f"[dim]Creator:[/]   {warehouse.creator}",
         ]
 
-        lines.extend([
-            "",
-            "─" * 40,
-            "",
-            "[dim]Actions:[/]",
-            "  [bold #e94560]s[/] start  [bold #e94560]S[/] stop  [bold #e94560]r[/] refresh",
-            "  [bold #e94560]Enter[/] open in browser",
-            "",
-            "[dim]Navigation:[/]",
-            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]j[/] jobs  [bold #e94560]p[/] profiles",
-            "",
-            "[yellow]Press A to arm before destructive actions[/]",
-        ])
-
         detail.update("\n".join(lines))
+
+        # Update footer with context-aware actions
+        self._update_footer()
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         """Handle row highlight."""

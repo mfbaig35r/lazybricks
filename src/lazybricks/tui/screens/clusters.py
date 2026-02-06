@@ -15,13 +15,11 @@ from textual import work
 
 from lazybricks.models.cluster import ClusterSummary, ClusterState
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import CLUSTERS_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class ClustersScreen(BaseScreen):
     """Clusters management screen."""
-
-    SCREEN_BINDINGS = CLUSTERS_BINDINGS
 
     BINDINGS = [
         ("r", "refresh", "Refresh"),
@@ -36,6 +34,22 @@ class ClustersScreen(BaseScreen):
         super().__init__()
         self._clusters: list[ClusterSummary] = []
         self._selected_cluster: ClusterSummary | None = None
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Cluster screen context actions - varies by selection state."""
+        actions = [
+            HintItem("r", "Refresh"),
+            HintItem("Enter", "Open"),
+        ]
+
+        if self._selected_cluster:
+            if self._selected_cluster.state == ClusterState.TERMINATED:
+                actions.append(HintItem("s", "Start", destructive=True))
+            elif self._selected_cluster.state == ClusterState.RUNNING:
+                actions.append(HintItem("t", "Terminate", destructive=True))
+                actions.append(HintItem("R", "Restart", destructive=True))
+
+        return actions
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -142,21 +156,10 @@ class ClustersScreen(BaseScreen):
             lines.append("")
             lines.append(f"[dim]Message:[/] {cluster.state_message}")
 
-        lines.extend([
-            "",
-            "─" * 40,
-            "",
-            "[dim]Actions:[/]",
-            "  [bold #e94560]s[/] start  [bold #e94560]t[/] terminate  [bold #e94560]R[/] restart",
-            "  [bold #e94560]l[/] logs  [bold #e94560]r[/] refresh  [bold #e94560]Enter[/] open in browser",
-            "",
-            "[dim]Navigation:[/]",
-            "  [bold #e94560]h[/] home  [bold #e94560]j[/] jobs  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles",
-            "",
-            "[yellow]Press A to arm before destructive actions[/]",
-        ])
-
         detail.update("\n".join(lines))
+
+        # Update footer with context-aware actions
+        self._update_footer()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Handle row selection."""

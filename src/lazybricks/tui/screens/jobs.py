@@ -15,13 +15,11 @@ from textual import work
 
 from lazybricks.models.job import JobSummary, RunSummary, RunDetail, RunState, RunResult
 from lazybricks.tui.screens.base import BaseScreen
-from lazybricks.tui.widgets.status_bar import JOBS_BINDINGS
+from lazybricks.tui.widgets.footer_bar import HintItem
 
 
 class JobsScreen(BaseScreen):
     """Jobs management screen with three-pane layout."""
-
-    SCREEN_BINDINGS = JOBS_BINDINGS
 
     BINDINGS = [
         ("r", "refresh", "Refresh"),
@@ -42,6 +40,36 @@ class JobsScreen(BaseScreen):
         self._selected_job: JobSummary | None = None
         self._selected_run: RunSummary | None = None
         self._current_pane = 0  # 0=jobs, 1=runs, 2=detail
+
+    def get_context_actions(self) -> list[HintItem]:
+        """Jobs screen context actions - varies by pane and selection."""
+        actions = [
+            HintItem("r", "Refresh"),
+            HintItem("Tab", "Pane"),
+        ]
+
+        if self._current_pane == 0:
+            # Jobs pane
+            actions.append(HintItem("Enter", "Runs"))
+            if self._selected_job:
+                actions.append(HintItem("n", "Run Now", destructive=True))
+        elif self._current_pane == 1:
+            # Runs pane
+            actions.append(HintItem("Enter", "Detail"))
+            actions.append(HintItem("Esc", "Back"))
+            if self._selected_run:
+                actions.append(HintItem("l", "Logs"))
+                if self._selected_run.state.is_active:
+                    actions.append(HintItem("c", "Cancel", destructive=True))
+                else:
+                    actions.append(HintItem("R", "Rerun", destructive=True))
+        else:
+            # Detail pane
+            actions.append(HintItem("Esc", "Back"))
+            if self._selected_run:
+                actions.append(HintItem("l", "Logs"))
+
+        return actions
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -202,19 +230,10 @@ class JobsScreen(BaseScreen):
             lines.append("[red]Error:[/]")
             lines.append(f"  {run.error_snippet[:200]}")
 
-        lines.extend([
-            "",
-            "─" * 40,
-            "",
-            "[dim]Actions:[/]",
-            "  [bold #e94560]n[/] run now  [bold #e94560]c[/] cancel  [bold #e94560]R[/] rerun  [bold #e94560]l[/] logs",
-            "",
-            "[dim]Navigation:[/]",
-            "  [bold #e94560]Tab[/] next pane  [bold #e94560]Enter[/] drill down  [bold #e94560]Esc[/] back up",
-            "  [bold #e94560]h[/] home  [bold #e94560]c[/] clusters  [bold #e94560]w[/] warehouses  [bold #e94560]p[/] profiles",
-        ])
-
         detail.update("\n".join(lines))
+
+        # Update footer with context-aware actions
+        self._update_footer()
 
     def _update_pane_styles(self) -> None:
         """Update visual style of panes based on focus."""
@@ -258,12 +277,14 @@ class JobsScreen(BaseScreen):
         self._current_pane = (self._current_pane + 1) % 3
         self._update_pane_styles()
         self._focus_current_pane()
+        self._update_footer()
 
     def action_prev_pane(self) -> None:
         """Move to previous pane."""
         self._current_pane = (self._current_pane - 1) % 3
         self._update_pane_styles()
         self._focus_current_pane()
+        self._update_footer()
 
     def _focus_current_pane(self) -> None:
         """Focus the current pane's table."""

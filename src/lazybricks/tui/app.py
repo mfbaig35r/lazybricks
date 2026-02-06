@@ -22,7 +22,7 @@ from lazybricks.api.logs import LogOps
 from lazybricks.api.warehouses import WarehouseOps
 from lazybricks.tui.theme_config import get_css, get_theme
 from lazybricks.tui.widgets.header import Header
-from lazybricks.tui.widgets.status_bar import StatusBar, GLOBAL_BINDINGS
+from lazybricks.tui.widgets.footer_bar import FooterBar
 
 
 class LazyBricksApp(App):
@@ -64,7 +64,7 @@ class LazyBricksApp(App):
 
         # Widgets (created in compose)
         self._header: Header | None = None
-        self._status_bar: StatusBar | None = None
+        self._footer_bar: FooterBar | None = None
 
     @property
     def client(self) -> DatabricksClient:
@@ -108,17 +108,17 @@ class LazyBricksApp(App):
         workspace = config.host_short if config else ""
         profile = config.profile_name if config else ""
 
-        # Create header and status bar
+        # Create header and footer bar
         self._header = Header(
             guard=self._guard,
             workspace=workspace,
             profile=profile,
         )
-        self._status_bar = StatusBar(bindings=GLOBAL_BINDINGS)
+        self._footer_bar = FooterBar(guard=self._guard)
 
         yield self._header
         yield Container(id="screen-content")
-        yield self._status_bar
+        yield self._footer_bar
 
     def on_mount(self) -> None:
         """Called when app is mounted."""
@@ -138,10 +138,15 @@ class LazyBricksApp(App):
         # Start on home screen
         self.push_screen("home")
 
-    def update_status_bar(self, bindings: list[tuple[str, str]]) -> None:
-        """Update the status bar with new bindings."""
-        if self._status_bar:
-            self._status_bar.set_bindings(bindings)
+    def update_footer(self, actions: list) -> None:
+        """Update the footer bar with context actions."""
+        if self._footer_bar:
+            self._footer_bar.set_context_actions(actions)
+
+    @property
+    def footer_bar(self) -> FooterBar | None:
+        """Access to footer bar for screens."""
+        return self._footer_bar
 
     def update_header(self, workspace: str = "", profile: str = "") -> None:
         """Update header workspace/profile display."""
