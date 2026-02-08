@@ -6,6 +6,7 @@ All methods return normalized model objects from lazybricks.models.pipeline.
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 
 from lazybricks.api.client import DatabricksClient
@@ -98,8 +99,10 @@ class PipelineOps:
                 logger.warning(f"Failed to parse update: {e}")
 
         # Already sorted by most recent from API, but ensure it
+        # Use a default datetime for None values to ensure stable sorting
+        min_dt = datetime(1970, 1, 1, tzinfo=timezone.utc)
         summaries.sort(
-            key=lambda u: u.creation_time or u.start_time or u.end_time,
+            key=lambda u: u.creation_time or u.start_time or u.end_time or min_dt,
             reverse=True,
         )
         return summaries

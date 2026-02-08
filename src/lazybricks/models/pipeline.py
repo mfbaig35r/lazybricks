@@ -314,8 +314,18 @@ class UpdateDetail(UpdateSummary):
 
 # ─── Helpers ────────────────────────────────────────────────────
 
-def _epoch_ms_to_dt(epoch_ms: Optional[int]) -> Optional[datetime]:
-    """Convert epoch milliseconds to timezone-aware datetime."""
-    if epoch_ms is None or epoch_ms == 0:
+def _epoch_ms_to_dt(epoch_ms) -> Optional[datetime]:
+    """Convert epoch milliseconds to timezone-aware datetime.
+
+    Handles both int and string inputs from the API.
+    """
+    if epoch_ms is None:
         return None
-    return datetime.fromtimestamp(epoch_ms / 1000.0, tz=timezone.utc)
+    try:
+        # Convert to int if string
+        ms = int(epoch_ms)
+        if ms == 0:
+            return None
+        return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
+    except (ValueError, TypeError):
+        return None
